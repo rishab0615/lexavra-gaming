@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../../../theme/app_theme.dart';
 import '../../controllers/auth_controller.dart';
 import '../../controllers/wallet_controller.dart';
+import '../../widgets/game_card.dart';
 
 class HomePage extends GetView<WalletController> {
   const HomePage({super.key});
@@ -107,56 +108,19 @@ class HomePage extends GetView<WalletController> {
             const SizedBox(height: 12),
 
             // Dice game
-            Card(
-              child: InkWell(
-                borderRadius: BorderRadius.circular(AppTheme.radius),
-                onTap: () => Get.toNamed('/dice'),
-                child: Padding(
-                  padding: const EdgeInsets.all(18),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 52,
-                        height: 52,
-                        decoration: BoxDecoration(
-                          color: AppTheme.primary.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                        child: const Icon(
-                          Icons.casino_rounded,
-                          size: 28,
-                          color: AppTheme.primary,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Dice',
-                              style: Theme.of(context).textTheme.titleMedium
-                                  ?.copyWith(fontWeight: FontWeight.w700),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Roll over or under your target',
-                              style: Theme.of(context).textTheme.bodySmall
-                                  ?.copyWith(color: Colors.grey.shade600),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const Icon(
-                        Icons.chevron_right_rounded,
-                        color: Colors.grey,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+            GameCard(
+              icon: Icons.casino_rounded,
+              title: 'Dice',
+              subtitle: 'Roll over or under your target',
+              onTap: () => Get.toNamed('/dice'),
             ),
-
+            const SizedBox(height: 8),
+            GameCard(
+              icon: Icons.toll_rounded,
+              title: 'Coin Flip',
+              subtitle: 'Pick heads or tails and flip the coin',
+              onTap: () => Get.toNamed('/coin'),
+            ),
             const SizedBox(height: 24),
 
             // History

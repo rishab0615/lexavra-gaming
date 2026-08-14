@@ -1,45 +1,43 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../domain/games/coin_game.dart';
 import '../../../theme/app_theme.dart';
-import '../../controllers/dice_controller.dart';
+import '../../controllers/coin_controller.dart';
 import '../../controllers/wallet_controller.dart';
 
-class DicePage extends StatefulWidget {
-  const DicePage({super.key});
+class CoinPage extends StatefulWidget {
+  const CoinPage({super.key});
 
   @override
-  State<DicePage> createState() => _DicePageState();
+  State<CoinPage> createState() => _CoinPageState();
 }
 
-class _DicePageState extends State<DicePage> {
+class _CoinPageState extends State<CoinPage> {
   late final TextEditingController _betController;
-  late final TextEditingController _targetController;
 
   @override
   void initState() {
     super.initState();
 
     _betController = TextEditingController(text: '10');
-    _targetController = TextEditingController(text: '50');
   }
 
   @override
   void dispose() {
     _betController.dispose();
-    _targetController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.find<DiceController>();
+    final controller = Get.find<CoinController>();
     final walletController = Get.find<WalletController>();
 
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Dice',
+          'Coin Flip',
           style: TextStyle(fontWeight: FontWeight.w700),
         ),
       ),
@@ -104,7 +102,7 @@ class _DicePageState extends State<DicePage> {
             const SizedBox(height: 6),
 
             Text(
-              'Choose a target and predict whether the roll will be above or below it.',
+              'Choose Heads or Tails and predict the result of the coin flip.',
               style: Theme.of(
                 context,
               ).textTheme.bodyMedium?.copyWith(color: Colors.grey.shade600),
@@ -112,6 +110,7 @@ class _DicePageState extends State<DicePage> {
 
             const SizedBox(height: 20),
 
+            // Bet amount
             TextField(
               controller: _betController,
               keyboardType: TextInputType.number,
@@ -123,29 +122,19 @@ class _DicePageState extends State<DicePage> {
 
             const SizedBox(height: 14),
 
-            TextField(
-              controller: _targetController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Target (2 - 98)',
-                prefixIcon: Icon(Icons.track_changes_rounded),
-              ),
-            ),
-
-            const SizedBox(height: 14),
-
+            // Prediction
             Obx(
-              () => DropdownButtonFormField<bool>(
-                initialValue: controller.rollOver.value,
+              () => DropdownButtonFormField<CoinSide>(
+                initialValue: controller.prediction.value,
                 decoration: const InputDecoration(
                   labelText: 'Prediction',
-                  prefixIcon: Icon(Icons.swap_vert_rounded),
+                  prefixIcon: Icon(Icons.toll_rounded),
                 ),
                 items: const [
-                  DropdownMenuItem(value: true, child: Text('Roll Over')),
-                  DropdownMenuItem(value: false, child: Text('Roll Under')),
+                  DropdownMenuItem(value: CoinSide.heads, child: Text('Heads')),
+                  DropdownMenuItem(value: CoinSide.tails, child: Text('Tails')),
                 ],
-                onChanged: controller.isRolling.value
+                onChanged: controller.isFlipping.value
                     ? null
                     : (value) {
                         if (value != null) {
@@ -155,17 +144,26 @@ class _DicePageState extends State<DicePage> {
               ),
             ),
 
+            const SizedBox(height: 8),
+
+            Text(
+              'Win payout: 2x your bet',
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: Colors.grey.shade600),
+            ),
+
             const SizedBox(height: 20),
 
-            // Roll button
+            // Flip button
             Obx(
               () => SizedBox(
                 height: AppTheme.buttonHeight,
                 child: ElevatedButton.icon(
-                  onPressed: controller.isRolling.value
+                  onPressed: controller.isFlipping.value
                       ? null
-                      : () => _roll(context, controller),
-                  icon: controller.isRolling.value
+                      : () => _flip(context, controller),
+                  icon: controller.isFlipping.value
                       ? const SizedBox(
                           width: 18,
                           height: 18,
@@ -174,9 +172,9 @@ class _DicePageState extends State<DicePage> {
                             color: Colors.white,
                           ),
                         )
-                      : const Icon(Icons.casino_rounded),
+                      : const Icon(Icons.toll_rounded),
                   label: Text(
-                    controller.isRolling.value ? 'Rolling...' : 'Roll Dice',
+                    controller.isFlipping.value ? 'Flipping...' : 'Flip Coin',
                   ),
                 ),
               ),
@@ -184,23 +182,22 @@ class _DicePageState extends State<DicePage> {
 
             const SizedBox(height: 28),
 
-            _DiceResultSection(controller: controller),
+            _CoinResultSection(controller: controller),
           ],
         ),
       ),
     );
   }
 
-  Future<void> _roll(BuildContext context, DiceController controller) async {
+  Future<void> _flip(BuildContext context, CoinController controller) async {
     final bet = int.tryParse(_betController.text);
-    final target = int.tryParse(_targetController.text);
 
-    if (bet == null || target == null) {
-      _showError(context, 'Enter valid numbers.');
+    if (bet == null) {
+      _showError(context, 'Enter a valid bet amount.');
       return;
     }
 
-    final error = await controller.roll(bet: bet, target: target);
+    final error = await controller.flip(bet: bet);
 
     if (error != null && context.mounted) {
       _showError(context, error);
@@ -219,10 +216,10 @@ class _DicePageState extends State<DicePage> {
   }
 }
 
-class _DiceResultSection extends StatelessWidget {
-  final DiceController controller;
+class _CoinResultSection extends StatelessWidget {
+  final CoinController controller;
 
-  const _DiceResultSection({required this.controller});
+  const _CoinResultSection({required this.controller});
 
   @override
   Widget build(BuildContext context) {
@@ -236,7 +233,7 @@ class _DiceResultSection extends StatelessWidget {
             child: Column(
               children: [
                 Icon(
-                  Icons.casino_outlined,
+                  Icons.toll_outlined,
                   size: 42,
                   color: Colors.grey.shade400,
                 ),
@@ -253,6 +250,14 @@ class _DiceResultSection extends StatelessWidget {
         );
       }
 
+      final resultText = gameResult.result == CoinSide.heads
+          ? 'HEADS'
+          : 'TAILS';
+
+      final predictionText = gameResult.prediction == CoinSide.heads
+          ? 'Heads'
+          : 'Tails';
+
       final resultColor = gameResult.won ? AppTheme.success : AppTheme.error;
 
       return Card(
@@ -268,24 +273,36 @@ class _DiceResultSection extends StatelessWidget {
                   letterSpacing: 0.5,
                 ),
               ),
+
               const SizedBox(height: 10),
+
               Text(
-                '${gameResult.roll}',
+                resultText,
                 style: Theme.of(context).textTheme.displayMedium?.copyWith(
                   fontWeight: FontWeight.w800,
                 ),
               ),
+
               const SizedBox(height: 8),
+
+              Text(
+                'Your prediction: $predictionText',
+                style: Theme.of(context).textTheme.bodyLarge,
+              ),
+
+              const SizedBox(height: 12),
+
               Text(
                 gameResult.won
                     ? 'Payout: ${gameResult.payout} coins'
                     : 'Better luck next time.',
                 style: Theme.of(context).textTheme.bodyLarge,
               ),
+
               const SizedBox(height: 6),
+
               Text(
-                'Multiplier: '
-                '${gameResult.multiplier.toStringAsFixed(2)}x',
+                'Multiplier: 2.00x',
                 style: Theme.of(
                   context,
                 ).textTheme.bodyMedium?.copyWith(color: Colors.grey.shade600),

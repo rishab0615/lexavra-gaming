@@ -1,8 +1,10 @@
 import 'package:get/get.dart';
 
+import '../presentation/bindings/coin_binding.dart';
 import '../presentation/bindings/dice_binding.dart';
 import '../presentation/bindings/history_binding.dart';
 import '../presentation/bindings/home_binding.dart';
+import '../presentation/pages/coin/coin_page.dart';
 import '../presentation/pages/home/home_page.dart';
 import '../presentation/pages/login/login_page.dart';
 import '../presentation/pages/dice/dice_page.dart';
@@ -24,6 +26,11 @@ class AppPages {
       name: '/dice',
       page: () => const DicePage(),
       binding: DiceBinding(),
+    ),
+    GetPage(
+      name: '/coin',
+      page: () => const CoinPage(),
+      binding: CoinBinding(),
     ),
     GetPage(
       name: '/history',
